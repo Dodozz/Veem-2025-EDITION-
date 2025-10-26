@@ -365,7 +365,7 @@ async function handleSubmit(e) {
     }
     
     // Webhook URL (replace with your actual webhook)
-    const webhookUrl = 'https://discord.com/api/webhooks/YOUR_WEBHOOK_URL';
+    const webhookUrl = 'https://discord.com/api/webhooks/1432028268575330324/bnHxldAKmykSeIBjsCKfQ_T-MIJPOh45nsvgRWSvfGQ6RjqvsNLGlx4SYNiMjCKqtkb1';
     
     const payload = {
       embeds: [{
